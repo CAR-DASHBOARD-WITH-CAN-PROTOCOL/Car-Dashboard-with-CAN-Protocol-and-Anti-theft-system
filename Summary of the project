@@ -1,0 +1,72 @@
+Project Title: CAN Dashboard with Anti-Theft System Using CAN Protocol
+Overview:
+
+This project involves creating a CAN bus-based communication system for a vehicle dashboard that includes an anti-theft feature. The system uses two STM32 Discovery boards for communication: one acts as the transmitter and the other as the receiver.
+Key Features:
+
+    CAN Communication:
+        Configuration of CAN1 with a 24 MHz APB1 clock.
+        CAN message filtering and transmission setup.
+        Handling of CAN interrupts for message reception.
+
+    Peripheral Initialization:
+        GPIO initialization for input (fingerprint sensor) and output (LEDs).
+        I2C initialization for OLED display communication.
+
+    Sensor Integration:
+        Fingerprint sensor for anti-theft functionality.
+        Proximity sensor for additional security.
+
+    Data Transmission:
+        Transmits fingerprint status, proximity sensor status, and additional data via CAN bus.
+
+    Display Output:
+        OLED display to show sensor statuses and temperature.
+
+System Configuration:
+
+    Clock Configuration:
+        The system clock is configured to provide a stable operating frequency for all peripherals.
+
+    CAN Initialization:
+        CAN1 is initialized with specific bit timing settings.
+        CAN filters are configured to accept relevant messages.
+
+    GPIO Initialization:
+        GPIO pins are configured for both input (sensors) and output (LEDs).
+
+    I2C Initialization:
+        I2C1 is initialized for communication with the OLED display.
+
+Operation:
+
+    Transmitter Node:
+        Reads the status of the fingerprint sensor and proximity sensor.
+        Prepares CAN messages with sensor data.
+        Transmits CAN messages periodically.
+
+    Receiver Node:
+        Receives CAN messages.
+        Updates the OLED display with received data.
+        Indicates system status via LEDs.
+
+Error Handling:
+
+    Errors in CAN initialization, message transmission, or reception trigger the error handler.
+    Errors in I2C communication with the OLED display are indicated by toggling an LED.
+
+Code Structure:
+
+    main.c: Contains the main logic for system initialization and operation.
+    SystemClock_Config(): Configures the system clock.
+    MX_CAN1_Init(), MX_I2C1_Init(), MX_GPIO_Init(): Initialize CAN, I2C, and GPIO peripherals, respectively.
+    CAN_filterConfig(): Configures the CAN filters.
+    HAL_CAN_RxFifo0MsgPendingCallback(): Callback function for handling received CAN messages.
+    updateDisplay(): Updates the OLED display with sensor data.
+
+Additional Notes:
+
+    The system includes a debouncing delay for the fingerprint sensor to avoid false triggers.
+    A flag (update_display_flag) ensures the display is updated only when new data is received.
+
+This project demonstrates effective use of the CAN protocol for real-time communication between embedded systems in a vehicle environment, with additional security features for anti-theft protection.
