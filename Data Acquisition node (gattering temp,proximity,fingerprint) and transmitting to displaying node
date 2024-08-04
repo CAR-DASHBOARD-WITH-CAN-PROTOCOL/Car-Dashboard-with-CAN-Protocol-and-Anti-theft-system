@@ -1,4 +1,15 @@
 /* USER CODE BEGIN Header */
+Clock configuration for APB1 CLOCK-> 24MHZ
+Activate Sys,RCC,AND CAN1
+In Can1> SET PRECSCALER  24
+BIT SEGMENT 1> 13
+BIT SEGMENT 2> 2
+Sjw> 1
+Activate Can interrup from Nvic parameters TX for trasmitter node and RX for receiver node
+Activae all the GPIOS leds GPIO OUTPUT
+Activate for PA0 FOR GPIO INPUT FOR fingerpring sensor
+temperature sensor is not added in code but shared random data
+
 /**
   ******************************************************************************
   * @file           : main.c
