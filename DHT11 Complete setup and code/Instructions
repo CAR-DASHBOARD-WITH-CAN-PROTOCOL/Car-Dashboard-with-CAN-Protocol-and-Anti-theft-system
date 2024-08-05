@@ -1,0 +1,32 @@
+Click RCC → High Speed Clock (HSE) to Crystal/Ceramic Resonator
+
+Click Clock Configuration tab → HCLK (MHz) to 72
+
+Click Pinout and Configuration tab
+
+Click Timer → Click TIM1 →
+
+Clock Source set to Internal Clock
+
+Configuration → Parameter Settings →
+
+Prescaler set to 71
+
+Set PB9 GPIO_Output
+
+Click connectivity --> Click I2C1
+
+For I2C select I2C
+
+Configuration --> Parameter Settings
+
+For I2C speed select Fast Mode
+
+Libraries to add
+Inside Core/Inc Folder
+
+fonts.h ssd1306.h
+> both the display header files present in the following directory
+Inside Core/Src Folder
+fonts.c ssd1306.c
+> both the C code  files present in the following directory
