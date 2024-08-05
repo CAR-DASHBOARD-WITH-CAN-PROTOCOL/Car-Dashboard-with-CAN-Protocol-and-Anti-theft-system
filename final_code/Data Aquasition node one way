@@ -115,12 +115,6 @@ int main(void)
     Error_Handler();
   }
 
-  if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
-  {
-    // Notification Error
-    Error_Handler();
-  }
-
   TxHeader.StdId = 0x123;
   TxHeader.RTR = CAN_RTR_DATA;
   TxHeader.IDE = CAN_ID_STD;
