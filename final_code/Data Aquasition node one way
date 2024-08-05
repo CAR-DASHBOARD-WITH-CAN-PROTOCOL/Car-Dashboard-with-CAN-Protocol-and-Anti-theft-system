@@ -57,6 +57,8 @@ CAN_HandleTypeDef hcan1;
 /* USER CODE BEGIN PV */
 uint8_t proximity_sensor = 0;
 uint8_t fingerprint = 0;
+uint8_t Temperature = 50;
+
 CAN_TxHeaderTypeDef TxHeader;
 uint8_t TxData[8]; // CAN payload
 uint32_t TxMailbox; // Buffer for Tx messages
@@ -67,8 +69,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_CAN1_Init(void);
 /* USER CODE BEGIN PFP */
-void CAN_filterConfig(void); // CAN filter configuration
-void LED_Display(uint8_t LedStatus);
 
 /* USER CODE END PFP */
 
@@ -155,7 +155,7 @@ int main(void)
     // Prepare CAN data
     TxData[0] = fingerprint;          // Fingerprint status
     TxData[1] = proximity_sensor;     // Proximity sensor status
-    TxData[2] = 50;                   // Additional data if needed
+    TxData[2] = Temperature;                   // Additional data if needed
 
     // Transmit CAN data
     if (HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK)
