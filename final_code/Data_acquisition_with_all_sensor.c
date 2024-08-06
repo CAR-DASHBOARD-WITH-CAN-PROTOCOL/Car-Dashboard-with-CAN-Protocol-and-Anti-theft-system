@@ -196,7 +196,7 @@ int main(void)
   TxHeader.StdId = 0x123;
   TxHeader.RTR = CAN_RTR_DATA;
   TxHeader.IDE = CAN_ID_STD;
-  TxHeader.DLC = 5; // Data length code, updated to 3 as we are sending 3 bytes
+  TxHeader.DLC = 4; // Data length code, updated to 3 as we are sending 3 bytes
   TxHeader.TransmitGlobalTime = DISABLE;
 
   /* USER CODE END 2 */
@@ -243,8 +243,7 @@ int main(void)
     TxData[0] = fingerprint;          // Fingerprint status
     TxData[1] = proximity_sensor;     // Proximity sensor status
     TxData[2] = Temperature;                   // Additional data if needed
-    TxData[3] = tFahrenheit;    
-    TxData[4] = RH;
+    TxData[3] = tFahrenheit;
     // Transmit CAN data
     if (HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK)
     {
