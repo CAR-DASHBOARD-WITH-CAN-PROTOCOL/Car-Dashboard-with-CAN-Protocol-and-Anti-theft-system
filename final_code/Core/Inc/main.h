@@ -57,12 +57,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define Fingerprint_sensor_Pin GPIO_PIN_0
-#define Fingerprint_sensor_GPIO_Port GPIOA
-#define Proximity_sensor_Pin GPIO_PIN_1
-#define Proximity_sensor_GPIO_Port GPIOA
-#define Temperature_sensor_Pin GPIO_PIN_7
-#define Temperature_sensor_GPIO_Port GPIOD
 
 /* USER CODE BEGIN Private defines */
 
