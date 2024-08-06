@@ -46,10 +46,10 @@ CAN_HandleTypeDef hcan1;
 I2C_HandleTypeDef hi2c1;
 
 /* USER CODE BEGIN PV */
-
 CAN_RxHeaderTypeDef   RxHeader; // CAN Data Frame header fields like RTR Bit, DLC, ID
 uint8_t               RxData[8]; // Actual Payload
 uint8_t               temp_sensor;
+uint8_t               temp_in_f_sensor;
 uint8_t               proximity_sensor;
 uint8_t               fingerprint_sensor;
 char                 temperature_buffer[10];
@@ -65,8 +65,9 @@ static void MX_GPIO_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-void CAN_filterConfig(void); // Acceptance filter Configuration
-void updateDisplay(void); // Function to update display based on sensor values
+void CAN_filterConfig (void);
+void updateDisplay(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -105,9 +106,7 @@ int main(void)
   MX_GPIO_Init();
   MX_CAN1_Init();
   MX_I2C1_Init();
-
   /* USER CODE BEGIN 2 */
-
   OLED1.init(&hi2c1);
   if(HAL_I2C_IsDeviceReady(&hi2c1, OLED1.getCAddress(), 1, 15)==HAL_OK)
   {
@@ -118,21 +117,21 @@ int main(void)
   {
       Error_Handler();
   }
-
   CAN_filterConfig();
-  if (HAL_CAN_Start(&hcan1) != HAL_OK)
-  {
-    /* Start Error */
-    Error_Handler();
-  }
-  if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
-  {
-    /* Notification Error */
-    Error_Handler();
-  }
 
-  // Initial display update
-  updateDisplay();
+   if (HAL_CAN_Start(&hcan1) != HAL_OK)
+   {
+     /* Start Error */
+     Error_Handler();
+   }
+   if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+   {
+     /* Notification Error */
+     Error_Handler();
+   }
+
+   // Initial display update
+   updateDisplay();
 
   /* USER CODE END 2 */
 
@@ -140,19 +139,20 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // Check if update_display_flag is set
-    if (update_display_flag)
-    {
-        update_display_flag = 0;
-        updateDisplay();
-    }
+	  // Check if update_display_flag is set
+	      if (update_display_flag)
+	      {
+	          update_display_flag = 0;
+	          updateDisplay();
+	      }
 
-    // Main loop can be used for other tasks
-    HAL_Delay(100); // Just for better tuning
+	      // Main loop can be used for other tasks
+	      HAL_Delay(100); // Just for better tuning
+
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
   }
-  /* USER CODE END WHILE */
-
-  /* USER CODE BEGIN 3 */
   /* USER CODE END 3 */
 }
 
@@ -255,7 +255,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.ClockSpeed = 400000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -281,11 +281,15 @@ static void MX_I2C1_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
@@ -303,6 +307,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -334,58 +340,66 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
    Error_Handler();
  }
  /* Display LEDx */
- if ((RxHeader.StdId == 0x123) && (RxHeader.IDE == CAN_ID_STD) && (RxHeader.DLC == 3))
+ if ((RxHeader.StdId == 0x123) && (RxHeader.IDE == CAN_ID_STD) && (RxHeader.DLC == 4))
  {
    fingerprint_sensor = RxData[0];
    proximity_sensor = RxData[1];
    temp_sensor = RxData[2];
+   temp_in_f_sensor = RxData[3];
+
 
    // Set the flag to update the display
    update_display_flag = 1;
  }
 }
+
 void updateDisplay(void)
 {
-   sprintf(temperature_buffer, "TEMP:%d", temp_sensor);
+    // Create the temperature display buffer
+    sprintf(temperature_buffer, "TEMP:%d C %d F", temp_sensor, temp_in_f_sensor);
 
-   OLED1.fill(0);
-   int line_height = 17; // Assuming each line of text is 8 pixels high
-   int y = 0;
+    // Clear the OLED display
+    OLED1.fill(0);
+    int line_height = 17; // Assuming each line of text is 17 pixels high
+    int y = 0;
 
-   if (fingerprint_sensor == 1)
-   {
-     // Display "carReady"
-     OLED1.text(0, y, "Car is Ready", 1, 1, 1);
-     y += line_height;
-     OLED1.drawFullscreen();
-     HAL_Delay(2000);
+    // Display the dashboard title with a bold effect by drawing multiple times with slight offsets
+    OLED1.text(0, y, "Car Dashboard", 1, 1, 1);
+    OLED1.text(1, y, "Car Dashboard", 1, 1, 1);
+    y += line_height;
 
-     // Check proximity sensor and display appropriate message
-     if (proximity_sensor == 1)
-     {
-       OLED1.text(0, y, "Safe Road Ahead", 1, 1, 1);
-     }
-     else
-     {
-       OLED1.text(0, y, "object detected", 1, 1, 1);
-     }
-     y += line_height;
-     OLED1.drawFullscreen();
-     HAL_Delay(2000);
+    // Check if the fingerprint sensor has verified the user
+    if (fingerprint_sensor == 1)
+    {
+        // Display "Car is Ready"
+        OLED1.text(0, y, "Car is Ready", 1, 1, 1);
+        y += line_height;
 
-     // Display "Temperature:" and temperature value
-     OLED1.text(0, y, temperature_buffer, 1, 1, 1);
-     OLED1.drawFullscreen();
-     HAL_Delay(2000);
-   }
-   else
-   {
-     // Display "verify fingerprint"
-     OLED1.text(0, y, "verify you...", 1, 1, 1);
-     OLED1.drawFullscreen();
-     HAL_Delay(2000);
-   }
+        // Check the proximity sensor and display the appropriate message
+        if (proximity_sensor == 1)
+        {
+            OLED1.text(0, y, "Safe Road Ahead", 1, 1, 1);
+        }
+        else
+        {
+            OLED1.text(0, y, "Object Detected", 1, 1, 1);
+        }
+        y += line_height;
+
+        // Display the temperature value
+        OLED1.text(0, y, temperature_buffer, 1, 1, 1);
+    }
+    else
+    {
+        // Display "Verify fingerprint"
+        OLED1.text(0, y, "Verify fingerprint...", 1, 1, 1);
+    }
+
+    // Draw the updated screen
+    OLED1.drawFullscreen();
+    HAL_Delay(2000);
 }
+
 /* USER CODE END 4 */
 
 /**
