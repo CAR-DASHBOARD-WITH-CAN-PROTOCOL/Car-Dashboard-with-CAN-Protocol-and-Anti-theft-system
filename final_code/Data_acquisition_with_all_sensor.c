@@ -67,7 +67,22 @@ float tFahrenheit = 0;
 float RH = 0;
 uint8_t TFI = 0;
 uint8_t TFD = 0;
-
+/*RHI: Relative Humidity Integer
+RHD: Relative Humidity Decimal
+TCI: Temperature Celsius Integer
+TCD: Temperature Celsius Decimal
+SUM: Checksum
+pMillis: Previous Milliseconds
+cMillis: Current Milliseconds
+Temperature: Temperature (in Celsius)
+tFahrenheit: Temperature (in Fahrenheit)
+RH: Relative Humidity
+TFI: Temperature Fahrenheit Integer
+TFD: Temperature Fahrenheit Decimal*/
+CAN_TxHeaderTypeDef TxHeader;
+uint8_t TxData[8]; // CAN payload
+uint32_t TxMailbox; // Buffer for Tx messages
+*/
 CAN_TxHeaderTypeDef TxHeader;
 uint8_t TxData[8]; // CAN payload
 uint32_t TxMailbox; // Buffer for Tx messages
