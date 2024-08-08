@@ -359,40 +359,40 @@ void updateDisplay(void)
     sprintf(temperature_buffer, "TEMP:%d C %d F", temp_sensor, temp_in_f_sensor);
 
     // Clear the OLED display
-    OLED1.fill(0);
+    OLED1.fill(1);
     int line_height = 17; // Assuming each line of text is 17 pixels high
     int y = 0;
 
     // Display the dashboard title with a bold effect by drawing multiple times with slight offsets
-    OLED1.text(0, y, "Car Dashboard", 1, 1, 1);
-    OLED1.text(1, y, "Car Dashboard", 1, 1, 1);
+    OLED1.text(0, y, "Car Dashboard", 0, 1, 1);
+    OLED1.text(1, y, "Car Dashboard", 0, 1, 1);
     y += line_height;
 
     // Check if the fingerprint sensor has verified the user
     if (fingerprint_sensor == 1)
     {
         // Display "Car is Ready"
-        OLED1.text(0, y, "Car is Ready", 1, 1, 1);
+        OLED1.text(0, y, "Car is Ready", 0, 1, 1);
         y += line_height;
 
         // Check the proximity sensor and display the appropriate message
         if (proximity_sensor == 1)
         {
-            OLED1.text(0, y, "Safe Road Ahead", 1, 1, 1);
+            OLED1.text(0, y, "Safe Road Ahead", 0, 1, 1);
         }
         else
         {
-            OLED1.text(0, y, "Object Detected", 1, 1, 1);
+            OLED1.text(0, y, "Object Detected", 0, 1, 1);
         }
         y += line_height;
 
         // Display the temperature value
-        OLED1.text(0, y, temperature_buffer, 1, 1, 1);
+        OLED1.text(0, y, temperature_buffer, 0, 1, 1);
     }
     else
     {
         // Display "Verify fingerprint"
-        OLED1.text(0, y, "Verify fingerprint...", 1, 1, 1);
+        OLED1.text(0, y, "Verify fingerprint...", 0, 1, 1);
     }
 
     // Draw the updated screen
