@@ -1,0 +1,104 @@
+#include "stm32f4xx_hal.h"  // Include your specific HAL library
+#include "main.h"           // Include your main header
+
+CAN_HandleTypeDef hcan1;
+TIM_HandleTypeDef htim2; // Timer handle for retransmission
+volatile uint8_t transmissionActive = 0; // Flag to track transmission state
+
+void CAN_Transmit(void);
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
+void Timer_Init(void);
+
+int main(void)
+{
+    HAL_Init(); // Initialize the HAL Library
+    SystemClock_Config(); // Configure the system clock
+
+    // CAN initialization code here
+    // (Make sure to initialize hcan1 appropriately)
+
+    // GPIO initialization code for PA0
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_0;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING; // Interrupt on rising edge
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    // Timer initialization for retransmission
+    Timer_Init();
+
+    // Start the CAN peripheral
+    if (HAL_CAN_Start(&hcan1) != HAL_OK)
+    {
+        Error_Handler(); // Handle error
+    }
+
+    // Activate CAN notification for RX FIFO 0
+    if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+    {
+        Error_Handler(); // Handle error
+    }
+
+    // Main loop
+    while (1)
+    {
+        // Your main loop code here
+    }
+}
+
+// Function to transmit CAN messages
+void CAN_Transmit(void)
+{
+    CAN_TxHeaderTypeDef txHeader;
+    uint8_t txData[8] = {0}; // Your data to send
+
+    // Configure your transmission header
+    txHeader.StdId = 0x123; // Example Standard ID
+    txHeader.ExtId = 0;     // Extended ID if needed
+    txHeader.RTR = CAN_RTR_DATA; // Data frame
+    txHeader.IDE = CAN_ID_STD;   // Standard ID
+    txHeader.DLC = sizeof(txData); // Data length code
+
+    // Transmit the message
+    uint32_t mailbox;
+    if (HAL_CAN_AddTxMessage(&hcan1, &txHeader, txData, &mailbox) != HAL_OK)
+    {
+        // Transmission error handling (optional)
+    }
+}
+
+// GPIO EXTI Callback function
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == GPIO_PIN_0) // Check if PA0 was pressed
+    {
+        transmissionActive = 1; // Start transmission
+        HAL_TIM_Base_Start_IT(&htim2); // Start timer for retransmission
+    }
+}
+
+// Timer interrupt callback
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM2) // Check if it's TIM2
+    {
+        if (transmissionActive)
+        {
+            CAN_Transmit(); // Call transmit function every second
+        }
+    }
+}
+
+// Timer initialization function
+void Timer_Init(void)
+{
+    __HAL_RCC_TIM2_CLK_ENABLE(); // Enable clock for TIM2
+    htim2.Instance = TIM2;
+    htim2.Init.Prescaler = 16000 - 1; // Prescale to get 1ms tick (for 16MHz clock)
+    htim2.Init.Period = 1000 - 1; // Set timer period to 1 second
+    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+    HAL_TIM_Base_Init(&htim2); // Initialize TIM2
+
+    HAL_TIM_Base_Start_IT(&htim2); // Start the timer in interrupt mode
+}
